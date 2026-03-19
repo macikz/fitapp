@@ -34,37 +34,64 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Neplatný požadavek." }, { status: 400 });
   }
 
-  const { text, targetCalories, targetProtein, targetCarbs, targetFat } = body as {
+  const { text, targetCalories, targetProtein, targetCarbs, targetFat, favoriteFoods, currentCalories, currentProtein, currentCarbs, currentFat } = body as {
     text?: string;
     targetCalories?: number;
     targetProtein?: number;
     targetCarbs?: number;
     targetFat?: number;
+    favoriteFoods?: string[];
+    currentCalories?: number;
+    currentProtein?: number;
+    currentCarbs?: number;
+    currentFat?: number;
   };
 
   if (!text?.trim()) {
     return NextResponse.json({ error: "Zadej co jsi jedl." }, { status: 400 });
   }
 
+  const favoritesContext = favoriteFoods && favoriteFoods.length > 0
+    ? `\nUživatelova oblíbená jídla (můžeš je použít v návrzích):\n${favoriteFoods.map((f, i) => `${i + 1}. ${f}`).join("\n")}`
+    : "";
+
+  const tCal = targetCalories ?? 2500;
+  const tPro = targetProtein ?? 150;
+  const tCarb = targetCarbs;
+  const tFat = targetFat;
+  const cCal = currentCalories ?? 0;
+  const cPro = currentProtein ?? 0;
+  const cCarb = currentCarbs ?? 0;
+  const cFat = currentFat ?? 0;
+
   const prompt = `Jsi fitness nutriční asistent. Odhadni makra pro toto jídlo:
 
 "${text}"
 
-Vrať POUZE čistý JSON objekt, bez markdown, bez backticks, bez komentářů, jen samotný JSON:
+Vrať POUZE čistý JSON objekt, bez markdown, bez backticks, bez komentářů:
 {"calories":číslo,"protein":číslo,"carbs":číslo,"fat":číslo,"suggestions":"text"}
 
-Pravidla:
-- calories = celkové kalorie (číslo)
+Pravidla pro makra:
+- calories = kalorie tohoto jídla (číslo)
 - protein = bílkoviny v gramech (číslo)
 - carbs = sacharidy v gramech (číslo)
 - fat = tuky v gramech (číslo)
-- suggestions = krátké doporučení v češtině co ještě sníst aby uživatel splnil denní cíle
 
 Denní cíle uživatele:
-- kalorie: ${targetCalories ?? 2500} kcal
-- bílkoviny: ${targetProtein ?? 150} g
-- sacharidy: ${targetCarbs ?? "nenastaveno"} g
-- tuky: ${targetFat ?? "nenastaveno"} g
+- kalorie: ${tCal} kcal (dosud snědeno: ${cCal} kcal)
+- bílkoviny: ${tPro} g (dosud: ${cPro} g)
+${tCarb ? `- sacharidy: ${tCarb} g (dosud: ${cCarb} g)` : ""}
+${tFat ? `- tuky: ${tFat} g (dosud: ${cFat} g)` : ""}
+${favoritesContext}
+
+Pravidla pro suggestions:
+- Vypočítej kolik zbývá do cíle PO přidání tohoto jídla
+- Pokud zbývá doplnit makra, navrhni VŽDY PŘESNĚ 3 možnosti jak doplnit zbývající makra
+- Každá možnost musí být konkrétní jídlo nebo kombinace s přibližným množstvím
+- Mix: aspoň 1 návrh z oblíbených uživatele, aspoň 1 obecný zdravý návrh
+- Formát: "1. [jídlo] (~Xg bílkovin, ~Y kcal) 2. [jídlo] (~Xg bílkovin, ~Y kcal) 3. [jídlo] (~Xg bílkovin, ~Y kcal)"
+- Pokud jsou všechny cíle splněny nebo překročeny, napiš "Denní cíle jsou splněny, výborně!"
+- Piš česky, stručně
 
 Odpověz POUZE JSON, nic jiného.`;
 

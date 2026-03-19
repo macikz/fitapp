@@ -3,46 +3,48 @@
 export interface Exercise {
   id: string;
   name: string;
-  // Top set target
   topSetRepsMin: number;
   topSetRepsMax: number;
-  // Back-off set target
   backOffRepsMin: number;
   backOffRepsMax: number;
-  // Weight settings
-  weightIncrement: number; // kg for progression
-  backOffDropPercent: number; // e.g. 10 means -10% from top set weight
-  // Informational
-  warmUpSets: number; // always 2, informational only
+  weightIncrement: number;
+  backOffDropPercent: number;
+  warmUpSets: number;
 }
 
+// A named workout template (e.g. "Upper A", "Lower B")
+export interface WorkoutTemplate {
+  id: string;
+  name: string;
+  exercises: Exercise[];
+}
+
+// Maps each weekday index (0=Mon … 6=Sun) to a template id or null (rest)
+export type WeekSchedule = Record<number, string | null>; // 0–6 → templateId | null
+
+// Legacy – kept for backwards compat with old TrainingDay storage
 export interface TrainingDay {
   id: string;
   name: string;
   exercises: Exercise[];
 }
 
-export interface SetResult {
-  reps: number;
-}
-
 export interface ExerciseLog {
   exerciseId: string;
   exerciseName: string;
-  // Top set
   topSetWeight: number;
   topSetReps: number;
-  // Back-off set
   backOffWeight: number;
   backOffReps: number;
-  date: string; // ISO
+  date: string;
 }
 
 export interface TrainingSession {
   id: string;
-  dayId: string;
-  dayName: string;
-  date: string; // ISO
+  templateId: string;
+  templateName: string;
+  weekday: number; // 0=Mon … 6=Sun
+  date: string;
   logs: ExerciseLog[];
 }
 
@@ -67,6 +69,17 @@ export interface FoodEntry {
   text: string;
   macros: Macros;
   suggestions?: string;
+}
+
+// ─── Favorite Foods ───────────────────────────────────────────────────────────
+
+export type FoodCategory = "shake" | "hlavni" | "snack" | "ovoce_zelenina" | "ostatni";
+
+export interface FavoriteFood {
+  id: string;
+  name: string;
+  description: string; // what's in it, for AI
+  category: FoodCategory;
 }
 
 // ─── Settings ────────────────────────────────────────────────────────────────
