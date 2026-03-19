@@ -144,12 +144,12 @@ export default function Dashboard() {
             {recentSessions.map((s) => (
               <div key={s.id} className="card-sm" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>{s.dayName}</p>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: "0.95rem" }}>{s.templateName}</p>
                   <p style={{ margin: 0, color: "var(--muted)", fontSize: "0.8rem" }}>
                     {s.logs.length} cviků · {formatDate(s.date)}
                   </p>
                 </div>
-                <Link href={`/training/${s.dayId}`} style={{ textDecoration: "none" }}>
+                <Link href={`/training/log/${s.weekday}`} style={{ textDecoration: "none" }}>
                   <span className="btn btn-ghost" style={{ fontSize: "0.8rem" }}>Detail →</span>
                 </Link>
               </div>
